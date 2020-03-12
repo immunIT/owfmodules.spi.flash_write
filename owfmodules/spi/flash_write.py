@@ -1,3 +1,11 @@
+# -*- coding:utf-8 -*-
+
+# Octowire Framework
+# Copyright (c) Jordan Ovrè / Paul Duncan
+# License: GPLv3
+# Paul Duncan / Eresse <eresse@dooba.io>
+# Jordan Ovrè / Ghecko <ghecko78@gmail.com
+
 import codecs
 import shutil
 import struct
