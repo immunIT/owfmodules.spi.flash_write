@@ -21,7 +21,7 @@ class FlashWrite(AModule):
         super(FlashWrite, self).__init__(owf_config)
         self.meta.update({
             'name': 'SPI write flash',
-            'version': '1.0.0',
+            'version': '1.0.1',
             'description': 'Module to write an SPI flash',
             'author': 'Jordan Ovrè <ghecko78@gmail.com> / Paul Duncan <eresse@dooba.io>'
         })
