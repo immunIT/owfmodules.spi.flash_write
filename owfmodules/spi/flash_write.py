@@ -43,7 +43,7 @@ class FlashWrite(AModule):
         ]
         self.advanced_options.append(
             {"Name": "chunk_size", "Value": "", "Required": True, "Type": "int",
-             "Description": "Flash page/sector size", "Default": 0x0100},
+             "Description": "Flash page/sector size", "Default": 0x0100}
         )
         self.t_width, _ = shutil.get_terminal_size()
 
