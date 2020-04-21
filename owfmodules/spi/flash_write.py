@@ -41,10 +41,10 @@ class FlashWrite(AModule):
             {"Name": "spi_phase", "Value": "", "Required": True, "Type": "string",
              "Description": "set SPI phase (1=high or 0=low)", "Default": 0}
         ]
-        self.advanced_options.append(
+        self.advanced_options.append([
             {"Name": "chunk_size", "Value": "", "Required": True, "Type": "int",
-             "Description": "Flash page/sector size", "Default": 0x0100},
-        )
+             "Description": "Flash page/sector size", "Default": 0x0100}
+         ])
         self.t_width, _ = shutil.get_terminal_size()
 
     @staticmethod
