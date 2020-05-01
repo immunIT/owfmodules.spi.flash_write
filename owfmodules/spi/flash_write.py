@@ -106,12 +106,16 @@ class FlashWrite(AModule):
             self.erase(flash_interface, cs)
             self.logger.handle("Writing to flash...", self.logger.INFO)
             with open(firmware, "rb") as f:
-                while data := f.read(chunk_size):
+                while True:
+                    data = f.read(chunk_size)
+                    if not data:
+                        break
                     print(" " * t_width, end="\r", flush=True)
                     print("[*] Writing to address: {}".format(hex(current_chunk_addr)), end="\r", flush=True)
                     self.write_flash(flash_interface, cs, data, current_chunk_addr)
                     current_chunk_addr += chunk_size
                 self.logger.handle("Done!", self.logger.SUCCESS)
+
         except (Exception, ValueError) as err:
             self.logger.handle(err, self.logger.ERROR)
 
