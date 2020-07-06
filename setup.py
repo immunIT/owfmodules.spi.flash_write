@@ -10,7 +10,7 @@ __license__ = "Apache 2.0"
 __version__ = "1.0.0"
 __contact__ = "Jordan Ovrè / Ghecko <jovre@immunit.ch>, Paul Duncan / Eresse <pduncan@immunit.ch>"
 
-description = 'Octowire Framework flash dump module'
+description = 'Program generic SPI flash memories'
 name = 'owfmodules.spi.flash_write'
 
 setup(

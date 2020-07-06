@@ -20,30 +20,30 @@ class FlashWrite(AModule):
     def __init__(self, owf_config):
         super(FlashWrite, self).__init__(owf_config)
         self.meta.update({
-            'name': 'SPI write flash',
+            'name': 'SPI flash write',
             'version': '1.0.0',
-            'description': 'Module to write an SPI flash',
+            'description': 'Program generic SPI flash memories',
             'author': 'Jordan Ovrè / Ghecko <jovre@immunit.ch>, Paul Duncan / Eresse <pduncan@immunit.ch>'
         })
         self.options = {
             "spi_bus": {"Value": "", "Required": True, "Type": "int",
-                        "Description": "The octowire SPI device (0=SPI0 or 1=SPI1)", "Default": 0},
+                        "Description": "SPI bus (0=SPI0 or 1=SPI1)", "Default": 0},
             "cs_pin": {"Value": "", "Required": True, "Type": "int",
-                       "Description": "The octowire GPIO used as chip select (CS)", "Default": 0},
+                       "Description": "GPIO used as chip select (CS)", "Default": 0},
             "firmware": {"Value": "", "Required": True, "Type": "file_r",
-                         "Description": "The firmware to write to the SPI flash memory", "Default": ""},
+                         "Description": "Firmware file to write into the SPI flash memory", "Default": ""},
             "start_chunk": {"Value": "", "Required": True, "Type": "int",
-                            "Description": "The starting chunk address (1 chunk = 256 bytes)", "Default": 0},
+                            "Description": "Starting chunk (page) address (1 chunk = 256 bytes)", "Default": 0},
             "spi_baudrate": {"Value": "", "Required": True, "Type": "int",
-                             "Description": "set SPI baudrate (1000000 = 1MHz) maximum = 50MHz", "Default": 1000000},
+                             "Description": "SPI frequency (1000000 = 1MHz) maximum = 50MHz", "Default": 1000000},
             "spi_polarity": {"Value": "", "Required": True, "Type": "int",
-                             "Description": "set SPI polarity (1=high or 0=low)", "Default": 0},
+                             "Description": "SPI polarity (1=high or 0=low)", "Default": 0},
             "spi_phase": {"Value": "", "Required": True, "Type": "string",
-                          "Description": "set SPI phase (1=high or 0=low)", "Default": 0}
+                          "Description": "SPI phase (1=high or 0=low)", "Default": 0}
         }
         self.advanced_options.update({
             "chunk_size": {"Value": "", "Required": True, "Type": "int",
-                           "Description": "Flash page/sector size", "Default": 0x0100}
+                           "Description": "Flash page size", "Default": 0x0100}
         })
         self.t_width, _ = shutil.get_terminal_size()
 
@@ -66,10 +66,7 @@ class FlashWrite(AModule):
         status = spi_instance.receive(1)
         while status != b"\x00":
             status = spi_instance.receive(1)
-            print(" " * self.t_width, end="\r", flush=True)
-            print('Erasing status : 0x{}'.format(codecs.encode(status, 'hex').decode()), end="\r", flush=True)
             time.sleep(0.01)
-        print(" " * self.t_width, end="\r", flush=True)
         cs.status = 1
 
     def write_flash(self, spi_instance, cs, data, addr):
@@ -92,12 +89,12 @@ class FlashWrite(AModule):
 
         t_width, _ = shutil.get_terminal_size()
 
-        # Set and configure the GPIO interface used as chip select
+        # Setup and configure the GPIO interface used as chip select
         cs = GPIO(serial_instance=self.owf_serial, gpio_pin=cs_pin)
         cs.direction = GPIO.OUTPUT
         cs.status = 1
 
-        # Set and configure SPI interface
+        # Setup and configure SPI interface
         flash_interface = SPI(serial_instance=self.owf_serial, bus_id=bus_id)
         flash_interface.configure(baudrate=spi_baudrate, clock_polarity=spi_cpol, clock_phase=spi_cpha)
         try:
@@ -122,11 +119,11 @@ class FlashWrite(AModule):
     def run(self):
         """
         Main function.
-        The aim of this module is to write an spi flash.
+        Program generic SPI flash memories.
         :return:
         """
-        # If detect_octowire is True then Detect and connect to the Octowire hardware. Else, connect to the Octowire
-        # using the parameters that were configured. It sets the self.owf_serial variable if the hardware is found.
+        # If detect_octowire is True then detect and connect to the Octowire hardware. Else, connect to the Octowire
+        # using the parameters that were configured. This sets the self.owf_serial variable if the hardware is found.
         self.connect()
         if not self.owf_serial:
             return
