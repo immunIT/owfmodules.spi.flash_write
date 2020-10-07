@@ -6,10 +6,13 @@
 # Paul Duncan / Eresse <pduncan@immunit.ch>
 # Jordan Ovrè / Ghecko <jovre@immunit.ch>
 
-import codecs
+import math
+import os
 import shutil
 import struct
 import time
+
+from tqdm import tqdm
 
 from octowire_framework.module.AModule import AModule
 from octowire.gpio import GPIO
@@ -21,7 +24,7 @@ class FlashWrite(AModule):
         super(FlashWrite, self).__init__(owf_config)
         self.meta.update({
             'name': 'SPI flash write',
-            'version': '1.0.1',
+            'version': '1.1.0',
             'description': 'Program generic SPI flash memories',
             'author': 'Jordan Ovrè / Ghecko <jovre@immunit.ch>, Paul Duncan / Eresse <pduncan@immunit.ch>'
         })
@@ -43,9 +46,17 @@ class FlashWrite(AModule):
         }
         self.advanced_options.update({
             "chunk_size": {"Value": "", "Required": True, "Type": "int",
-                           "Description": "Flash page size", "Default": 0x0100}
+                           "Description": "Flash page size", "Default": 256}
         })
         self.t_width, _ = shutil.get_terminal_size()
+
+    @staticmethod
+    def _sizeof_fmt(num, suffix='B'):
+        for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+            if abs(num) < 1024.0:
+                return "%3.1f%s%s" % (num, unit, suffix)
+            num /= 1024.0
+        return "%.1f%s%s" % (num, 'Yi', suffix)
 
     @staticmethod
     def write_enable(spi_instance, cs):
@@ -83,9 +94,12 @@ class FlashWrite(AModule):
         spi_baudrate = self.options["spi_baudrate"]["Value"]
         spi_cpol = self.options["spi_polarity"]["Value"]
         spi_cpha = self.options["spi_phase"]["Value"]
-        current_chunk_addr = self.options["start_chunk"]["Value"]
+        start_chunk_addr = self.options["start_chunk"]["Value"]
         firmware = self.options["firmware"]["Value"]
         chunk_size = self.advanced_options["chunk_size"]["Value"]
+
+        firmware_size = os.stat(firmware).st_size
+        nb_of_chunks = math.ceil(firmware_size / chunk_size)
 
         t_width, _ = shutil.get_terminal_size()
 
@@ -101,16 +115,18 @@ class FlashWrite(AModule):
             self.write_enable(flash_interface, cs)
             self.logger.handle("Erasing flash...", self.logger.INFO)
             self.erase(flash_interface, cs)
-            self.logger.handle("Writing to flash...", self.logger.INFO)
+            self.logger.handle("Writing {} bytes to the flash memory...".format(firmware_size), self.logger.INFO)
             with open(firmware, "rb") as f:
-                while True:
+                for sector_nb in tqdm(range(start_chunk_addr, nb_of_chunks), desc="Reading",
+                                      unit_scale=False, ascii=" #", unit_divisor=1,
+                                      bar_format="{desc} : {percentage:3.0f}%[{bar}] {n_fmt}/{total_fmt} "
+                                                 "pages (" + str(chunk_size) + " bytes) "
+                                                 "[elapsed: {elapsed} left: {remaining}]"):
+                    chunk_addr = sector_nb * chunk_size
                     data = f.read(chunk_size)
-                    if not data:
-                        break
-                    self.write_flash(flash_interface, cs, data, current_chunk_addr)
-                    current_chunk_addr += chunk_size
-                self.logger.handle("Done!", self.logger.SUCCESS)
-
+                    self.write_flash(flash_interface, cs, data, chunk_addr)
+            self.logger.handle("Successfully write {} to flash memory.".format(self._sizeof_fmt(firmware_size)),
+                               self.logger.SUCCESS)
         except (Exception, ValueError) as err:
             self.logger.handle(err, self.logger.ERROR)
 
