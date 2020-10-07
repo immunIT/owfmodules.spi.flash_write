@@ -48,7 +48,6 @@ class FlashWrite(AModule):
             "chunk_size": {"Value": "", "Required": True, "Type": "int",
                            "Description": "Flash page size", "Default": 256}
         })
-        self.t_width, _ = shutil.get_terminal_size()
 
     @staticmethod
     def _sizeof_fmt(num, suffix='B'):
@@ -101,8 +100,6 @@ class FlashWrite(AModule):
         firmware_size = os.stat(firmware).st_size
         nb_of_chunks = math.ceil(firmware_size / chunk_size)
 
-        t_width, _ = shutil.get_terminal_size()
-
         # Setup and configure the GPIO interface used as chip select
         cs = GPIO(serial_instance=self.owf_serial, gpio_pin=cs_pin)
         cs.direction = GPIO.OUTPUT
@@ -117,7 +114,7 @@ class FlashWrite(AModule):
             self.erase(flash_interface, cs)
             self.logger.handle("Writing {} bytes to the flash memory...".format(firmware_size), self.logger.INFO)
             with open(firmware, "rb") as f:
-                for sector_nb in tqdm(range(start_chunk_addr, nb_of_chunks), desc="Reading",
+                for sector_nb in tqdm(range(start_chunk_addr, nb_of_chunks), desc="Writing",
                                       unit_scale=False, ascii=" #", unit_divisor=1,
                                       bar_format="{desc} : {percentage:3.0f}%[{bar}] {n_fmt}/{total_fmt} "
                                                  "pages (" + str(chunk_size) + " bytes) "
