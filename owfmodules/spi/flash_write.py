@@ -24,7 +24,7 @@ class FlashWrite(AModule):
         super(FlashWrite, self).__init__(owf_config)
         self.meta.update({
             'name': 'SPI flash write',
-            'version': '1.1.1',
+            'version': '1.1.2',
             'description': 'Program generic SPI flash memories',
             'author': 'Jordan Ovrè / Ghecko <jovre@immunit.ch>, Paul Duncan / Eresse <pduncan@immunit.ch>'
         })
@@ -38,7 +38,8 @@ class FlashWrite(AModule):
             "start_chunk": {"Value": "", "Required": True, "Type": "int",
                             "Description": "Starting chunk (page) address (1 chunk = 256 bytes)", "Default": 0},
             "spi_baudrate": {"Value": "", "Required": True, "Type": "int",
-                             "Description": "SPI frequency (1000000 = 1MHz) maximum = 50MHz", "Default": 1000000},
+                             "Description": "SPI frequency (1000000 = 1MHz) Minimum: 240kHz - Maximum: 60MHz",
+                             "Default": 1000000},
             "spi_polarity": {"Value": "", "Required": True, "Type": "int",
                              "Description": "SPI polarity (1=high or 0=low)", "Default": 0},
             "spi_phase": {"Value": "", "Required": True, "Type": "string",
